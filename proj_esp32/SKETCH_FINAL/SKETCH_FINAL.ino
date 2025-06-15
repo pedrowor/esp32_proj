@@ -3,8 +3,8 @@
 #include <SD.h>
 #include <SPI.h>
 
-const char* ssid = "Pedro";
-const char* password = "94840071"; 
+const char* ssid = ""; //Rede para conexão e seu SSID
+const char* password = ""; //Senha da rede
 
 //google webscript link
 const char* serverURL = "https://script.google.com/macros/s/AKfycbwzCLYZIODmRuY7YKJ2FEv1OL0mrttC8k4_EFFTNMjRR-3f62by_gT2Ndy9syv4Kc8/exec"; 
