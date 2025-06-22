@@ -1,12 +1,14 @@
-#include <WiFi.h>
+#include <WiFi.h>                     
 #include <HTTPClient.h>
 #include <SD.h>
 #include <SPI.h>
 
-const char* ssid = ""; //Rede para conexão e seu SSID
-const char* password = ""; //Senha da rede
 
-//google webscript link
+//constantes da rede
+const char* ssid = ""; //SSID da rede
+const char* password = ""; //senha da rede
+
+//link do webscript
 const char* serverURL = "https://script.google.com/macros/s/AKfycbwzCLYZIODmRuY7YKJ2FEv1OL0mrttC8k4_EFFTNMjRR-3f62by_gT2Ndy9syv4Kc8/exec"; 
 
 const int SD_CS_PIN = 5; //const pro cs pin
@@ -15,7 +17,7 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   
-  //setup pra escanear as redes wifis
+  //setup pra escanear as redes wifi
   Serial.println("Escaneando as Redes: ");
   int n = WiFi.scanNetworks();
   for (int i = 0; i < n; ++i) {
@@ -25,6 +27,7 @@ void setup() {
                   (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open" : "Encrypted");
   }
 
+//se conecta a rede wifi definida nas constantes
   WiFi.begin(ssid, password);
   Serial.print("Conectando ao WiFi");
 
@@ -41,6 +44,8 @@ void setup() {
     Serial.println("\nConectado.");
   }
 
+
+//iniciando o cartãoSD
   Serial.println("Inicializando SDCard");
   
   SPI.begin(18, 19, 23); 
@@ -52,11 +57,14 @@ void setup() {
   
   Serial.println("Modulo SD Conectado.");
 
-  uploadFilesFromSD("/"); 
-}
-void loop() {
+  uploadFilesFromSD("/"); //utilizando a função abaixo para definir o path como todo o cartãoSD, podemos especificar para dar maior precisão ao programa.
 }
 
+void loop() {
+//loop vazio
+}
+
+//função para definir o caminho do cartãoSD utilizando uma constante que pode ser alocada dinamicamente como visto acima
 void uploadFilesFromSD(const char* path) {
   File root = SD.open(path);
   if (!root) {
@@ -78,6 +86,8 @@ void uploadFilesFromSD(const char* path) {
   }
 }
 
+//chamada da função anterior, utilizando conexão http para dar upload nos arquivos com a constante do webscript
+//chunk de 4kb para estabilidade
 void uploadFile(File file) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
@@ -88,7 +98,7 @@ void uploadFile(File file) {
 
     WiFiClient *stream = http.getStreamPtr();
 
-    const size_t chunkSize = 1024; //1kb de chunk, aumentar se possível para maior estabilidade e velocidade
+    const size_t chunkSize = 4096;
     uint8_t buffer[chunkSize];
     
     while (file.available()) {
@@ -96,7 +106,7 @@ void uploadFile(File file) {
       stream->write(buffer, bytesRead);
     }
 
-    int httpResponseCode = http.POST((uint8_t *)NULL, 0); //termina o http post
+    int httpResponseCode = http.POST((uint8_t *)NULL, 0); 
     if (httpResponseCode > 0) {
       Serial.printf("Upload terminado. HTTP Code: %d\n", httpResponseCode);
       Serial.println(http.getString());
